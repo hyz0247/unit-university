@@ -52,7 +52,7 @@ public class UserController {
     /** 登录*/
     @PostMapping("/login")
     public Result login(@RequestBody User user){
-        System.out.println(user);
+
         List list = userService.lambdaQuery()
                 .eq(User::getUsername, user.getUsername())
                 .eq(User::getPassword,user.getPassword()).list();
@@ -66,6 +66,8 @@ public class UserController {
         }
         return Result.fail();
     }
+
+
 
 
 
