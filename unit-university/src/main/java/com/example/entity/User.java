@@ -2,6 +2,8 @@ package com.example.entity;
 
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -26,6 +28,7 @@ public class User implements Serializable {
 
     private String username;
 
+    @TableField(select = false)
     private String password;
 
     private LocalDateTime createtime;
