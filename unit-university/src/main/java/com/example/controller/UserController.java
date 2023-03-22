@@ -145,9 +145,8 @@ public class UserController {
         //生成验证码
         ServletOutputStream os = response.getOutputStream();
         String checkCode = CheckCodeUtil.outputVerifyImage(90, 40, os, 4);
-
-        //存入Session
-        session.setAttribute("checkCodeGen",checkCode);
+       //存入
+        session.setAttribute("checkCodeGen", checkCode);
 
     }
 
