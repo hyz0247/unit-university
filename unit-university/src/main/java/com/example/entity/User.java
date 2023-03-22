@@ -3,6 +3,7 @@ package com.example.entity;
 import java.time.LocalDateTime;
 import java.io.Serializable;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -31,6 +32,7 @@ public class User implements Serializable {
     @TableField(select = false)
     private String password;
 
+    @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createtime;
 
     private Integer roleId;

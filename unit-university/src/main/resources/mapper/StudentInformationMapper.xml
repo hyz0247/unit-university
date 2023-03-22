@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.mapper.StudentInformationMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.example.entity.StudentInformation">
+        <id column="id" property="id" />
+        <result column="student_id" property="studentId" />
+        <result column="university_id" property="universityId" />
+        <result column="name" property="name" />
+        <result column="phone" property="phone" />
+        <result column="gender" property="gender" />
+        <result column="birthday" property="birthday" />
+        <result column="major" property="major" />
+        <result column="email" property="email" />
+        <result column="introduce" property="introduce" />
+        <result column="level" property="level" />
+        <result column="graduation_year" property="graduationYear" />
+        <result column="Job1_id" property="job1Id" />
+        <result column="Job2_id" property="job2Id" />
+        <result column="Job3_id" property="job3Id" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, student_id, university_id, name, phone, gender, birthday, major, email, introduce, level, graduation_year, Job1_id, Job2_id, Job3_id
+    </sql>
+
+</mapper>
