@@ -43,8 +43,6 @@ public class UnitInformation implements Serializable {
 
     private String logo;
 
-    private LocalDateTime createTime;
-
     private Integer userId;
 
 

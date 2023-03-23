@@ -4,7 +4,7 @@ package com.example.controller;
 import com.example.commmon.QueryPageParam;
 import com.example.commmon.Result;
 import com.example.entity.*;
-import com.example.mapper.UserMapper;
+import com.example.mapper.*;
 import com.example.service.*;
 import com.example.utils.CheckCodeUtil;
 
@@ -48,6 +48,18 @@ public class UserController {
     private UserMapper userMapper;
 
     @Autowired
+    private AdminInformationMapper adminMapper;
+
+    @Autowired
+    private StudentInformationMapper studentMapper;
+
+    @Autowired
+    private UnitInformationMapper unitMapper;
+
+    @Autowired
+    private UniversityInformationMapper universityMapper;
+
+    @Autowired
     private AdminInformationService adinS;
 
     @Autowired
@@ -77,26 +89,27 @@ public class UserController {
                     if(adinS.lambdaQuery().eq(AdminInformation::getUserId,user1.getId()).list().size()>0){
                         AdminInformation adminInformation = adinS.lambdaQuery().eq(AdminInformation::getUserId,user1.getId()).list().get(0);
                         result.put("personInfo",adminInformation);
-                    }
+                    }else result.put("personInfo",new HashMap<>());
                     break;
                 case 1:
                     if(studentInformationService.lambdaQuery().eq(StudentInformation::getStudentId,user1.getId()).list().size()>0){
                         StudentInformation studentInformation = studentInformationService.lambdaQuery().eq(StudentInformation::getStudentId,user1.getId()).list().get(0);
                         result.put("personInfo",studentInformation);
-                    }
+                    }else result.put("personInfo",new HashMap<>());
                     break;
                 case 2:
                     if(universityInformationService.lambdaQuery().eq(UniversityInformation::getUserId,user1.getId()).list().size()>0){
                         UniversityInformation universityInformation = universityInformationService.lambdaQuery().eq(UniversityInformation::getUserId,user1.getId()).list().get(0);
                         result.put("personInfo",universityInformation);
-                    }
+                    }else result.put("personInfo",new HashMap<>());
                     break;
                 case 3:
                     if (unitInformationService.lambdaQuery().eq(UnitInformation::getUserId,user1.getId()).list().size()>0){
                         UnitInformation unitInformation = unitInformationService.lambdaQuery().eq(UnitInformation::getUserId,user1.getId()).list().get(0);
                         result.put("personInfo",unitInformation);
-                    }
+                    }else result.put("personInfo",new HashMap<>());
                     break;
+                default:result.put("personInfo",new HashMap<>());
 
             }
             result.put("user",user1);
@@ -122,6 +135,39 @@ public class UserController {
         return Result.suc();
     }
 
+    /** 修改管理员信息*/
+    @PostMapping("/modifyAdmin")
+    public Result modifyAdmin(@RequestBody AdminInformation admin){
+
+        adinS.saveOrUpdate(admin);
+        AdminInformation admin1 = adminMapper.selectById(admin.getId());
+        return Result.suc(admin1);
+    }
+    /** 修改学生信息*/
+    @PostMapping("/modifyStudent")
+    public Result modifyStudent(@RequestBody StudentInformation student){
+
+        studentInformationService.saveOrUpdate(student);
+        StudentInformation student1 = studentMapper.selectById(student.getId());
+        return Result.suc(student1);
+    }
+    /** 修改学校信息*/
+    @PostMapping("/modifyUniversity")
+    public Result modifyUniversity(@RequestBody UniversityInformation university){
+
+        universityInformationService.saveOrUpdate(university);
+        UniversityInformation university1 = universityMapper.selectById(university.getId());
+        return Result.suc(university1);
+    }
+    /** 修改单位信息*/
+    @PostMapping("/modifyUnit")
+    public Result modifyUnit(@RequestBody UnitInformation unit){
+
+        unitInformationService.saveOrUpdate(unit);
+        UnitInformation unit1 = unitMapper.selectById(unit.getId());
+        return Result.suc(unit1);
+    }
+
     /**修改密码验证旧密码是否正确*/
     @GetMapping("/findPwd")
     public Result findPwd(@RequestParam String username,String pwd){
@@ -145,8 +191,9 @@ public class UserController {
         //生成验证码
         ServletOutputStream os = response.getOutputStream();
         String checkCode = CheckCodeUtil.outputVerifyImage(90, 40, os, 4);
-       //存入
-        session.setAttribute("checkCodeGen", checkCode);
+
+        //存入Session
+        session.setAttribute("checkCodeGen",checkCode);
 
     }
 
