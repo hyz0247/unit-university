@@ -25,5 +25,10 @@
     <sql id="Base_Column_List">
         id, student_id, university_id, name, phone, gender, birthday, major, email, introduce, level, graduation_year, Job1_id, Job2_id, Job3_id
     </sql>
+    <select id="selectStudentId" resultType="com.example.entity.StudentInformation">
+        select student_id
+        from student_information
+                 ${ew.customSqlSegment}
+    </select>
 
 </mapper>

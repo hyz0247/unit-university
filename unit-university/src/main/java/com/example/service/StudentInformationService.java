@@ -1,7 +1,10 @@
 package com.example.service;
 
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.example.entity.StudentInformation;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +16,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface StudentInformationService extends IService<StudentInformation> {
 
+    List<StudentInformation> selectStudentId(Wrapper wrapper);
 }

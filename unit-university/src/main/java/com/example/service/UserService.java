@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
  * <p>
  *  服务类
@@ -15,8 +17,13 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface UserService extends IService<User> {
 
-    IPage pageC(IPage<User> page);
 
-    IPage pageCC(IPage<User> page, Wrapper wrapper);
+    IPage pageStu(IPage<User> page, Wrapper wrapper);
+
+    IPage pageUniver(IPage<User> page, Wrapper wrapper);
+
+    IPage pageUnit(IPage<User> page, Wrapper wrapper);
+
+    List<User> listCollege(Integer affiliation);
 
 }

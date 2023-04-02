@@ -18,11 +18,27 @@
         id, username, password, createtime, role_id, status, affiliation
     </sql>
 
-    <select id="pageC" resultType="com.example.entity.User">
-        select * from user
+    <select id="pageStu" resultType="com.example.entity.User">
+        SELECT user.*,student_information.name,student_information.gender
+        FROM user
+        LEFT JOIN student_information ON user.id=student_information.student_id ${ew.customSqlSegment}
     </select>
 
-    <select id="pageCC" resultType="com.example.entity.User">
-        select * from user ${ew.customSqlSegment}
+    <select id="pageUniver" resultType="com.example.entity.User">
+        SELECT user.*,university_information.name,university_information.contact_phone,university_information.logo
+        FROM user
+                 LEFT JOIN university_information ON user.id=university_information.user_id ${ew.customSqlSegment}
+    </select>
+
+    <select id="pageUnit" resultType="com.example.entity.User">
+        SELECT user.*,unit_information.name,unit_information.contact_phone,unit_information.logo
+        FROM user
+                 LEFT JOIN unit_information ON user.id=unit_information.user_id ${ew.customSqlSegment}
+    </select>
+    <select id="listCollege" resultType="com.example.entity.User">
+        SELECT user.*,college.email,college.name,college.contact_name,college.contact_phone,college.logo
+        FROM user
+                 LEFT JOIN college ON user.id=college.user_id
+        WHERE role_id = 2 and affiliation=#{affiliation}
     </select>
 </mapper>

@@ -1,6 +1,10 @@
 package com.example.controller;
 
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.commmon.QueryPageParam;
 import com.example.commmon.Result;
 import com.example.entity.*;
@@ -18,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
@@ -46,18 +51,6 @@ public class UserController {
 
     @Autowired
     private UserMapper userMapper;
-
-    @Autowired
-    private AdminInformationMapper adminMapper;
-
-    @Autowired
-    private StudentInformationMapper studentMapper;
-
-    @Autowired
-    private UnitInformationMapper unitMapper;
-
-    @Autowired
-    private UniversityInformationMapper universityMapper;
 
     @Autowired
     private AdminInformationService adinS;
@@ -135,38 +128,6 @@ public class UserController {
         return Result.suc();
     }
 
-    /** 修改管理员信息*/
-    @PostMapping("/modifyAdmin")
-    public Result modifyAdmin(@RequestBody AdminInformation admin){
-
-        adinS.saveOrUpdate(admin);
-        AdminInformation admin1 = adminMapper.selectById(admin.getId());
-        return Result.suc(admin1);
-    }
-    /** 修改学生信息*/
-    @PostMapping("/modifyStudent")
-    public Result modifyStudent(@RequestBody StudentInformation student){
-
-        studentInformationService.saveOrUpdate(student);
-        StudentInformation student1 = studentMapper.selectById(student.getId());
-        return Result.suc(student1);
-    }
-    /** 修改学校信息*/
-    @PostMapping("/modifyUniversity")
-    public Result modifyUniversity(@RequestBody UniversityInformation university){
-
-        universityInformationService.saveOrUpdate(university);
-        UniversityInformation university1 = universityMapper.selectById(university.getId());
-        return Result.suc(university1);
-    }
-    /** 修改单位信息*/
-    @PostMapping("/modifyUnit")
-    public Result modifyUnit(@RequestBody UnitInformation unit){
-
-        unitInformationService.saveOrUpdate(unit);
-        UnitInformation unit1 = unitMapper.selectById(unit.getId());
-        return Result.suc(unit1);
-    }
 
     /**修改密码验证旧密码是否正确*/
     @GetMapping("/findPwd")
@@ -178,8 +139,182 @@ public class UserController {
         return list.size()>0?Result.suc():Result.fail();
     }
 
+    /** 查询用户名是否存在*/
+    @GetMapping("/findByUsername")
+    public Result findByUsername(@RequestParam String username){
+
+        List list = userService.lambdaQuery().eq(User::getUsername, username).list();
+        return list.size()>0?Result.suc(list):Result.fail();
+    }
+
+    /**学生分页查找*/
+    @PostMapping("/listPageStu")
+    public Result listPageStu(@RequestBody QueryPageParam param){
+        HashMap hashMap = param.getParam();
+        String name = (String)hashMap.get("name");
+        String gender = (String)hashMap.get("gender");
+        String status = (String)hashMap.get("status");
+        String roleId = (String)hashMap.get("roleId");
+        String university = (String)hashMap.get("university");
 
 
+        IPage<User> page = new Page<>() ;
+        page.setCurrent(param.getPageNum());
+        page.setSize(param.getPageSize());
+
+        LambdaQueryWrapper<User> userQueryWrapper = new LambdaQueryWrapper<>();
+
+        if(StringUtils.isNotBlank(roleId)){
+            userQueryWrapper.eq(User::getRoleId,roleId);
+        }
+        if(StringUtils.isNotBlank(status)){
+            userQueryWrapper.eq(User::getRoleId,status);
+        }
+
+//        if((StringUtils.isNotBlank(name) && !"null".equals(name))||(StringUtils.isNotBlank(gender) && !"null".equals(gender))){
+//            List<StudentInformation> stuList = studentInformationService.selectStudentId(studentQueryWrapper);
+//            Integer[] a = new Integer[stuList.size()+1] ;
+//            String s = new String();
+//            for(StudentInformation stu: stuList){
+//                int i=0;
+//                a[i] = stu.getStudentId();
+//
+//            }
+//            for (int i=1;i<a.length;i++){
+//                s += a[i-1];
+//                if(a[i]!=null){
+//                    s += ",";
+//                }
+//            }
+//            userQueryWrapper.apply("user.id in ("+s+")");
+//        }
+        if((StringUtils.isNotBlank(name) && !"null".equals(name))&&(StringUtils.isNotBlank(gender) && !"null".equals(gender))&&(StringUtils.isNotBlank(university) && !"null".equals(university))){
+            userQueryWrapper.apply("user.id in ( select student_id from student_information where" +
+                    " name like '%"+name+"%' and gender = '"+gender+"' and university_id = "+university+")");
+        }else if((StringUtils.isNotBlank(name) && !"null".equals(name))&&(StringUtils.isNotBlank(gender) && !"null".equals(gender))){
+            userQueryWrapper.apply("user.id in ( select student_id from student_information where" +
+                    " name like '%"+name+"%' and gender = '"+gender+"'");
+        }else if((StringUtils.isNotBlank(name) && !"null".equals(name))&&(StringUtils.isNotBlank(university) && !"null".equals(university))){
+            userQueryWrapper.apply("user.id in ( select student_id from student_information where" +
+                    " name like '%"+name+"%' and university_id = "+university+"");
+        }else if((StringUtils.isNotBlank(gender) && !"null".equals(gender))&&(StringUtils.isNotBlank(university) && !"null".equals(university))){
+            userQueryWrapper.apply("user.id in ( select student_id from student_information where" +
+                    " gender = '"+gender+"' and university_id = "+university+"");
+        }else if(StringUtils.isNotBlank(name) && !"null".equals(name)){
+            userQueryWrapper.apply("user.id in ( select student_id from student_information where name like '%"+name+"%')");
+        }else if(StringUtils.isNotBlank(gender) && !"null".equals(gender)){
+            userQueryWrapper.apply("user.id in ( select student_id from student_information where gender = '"+gender+"')");
+        }else if(StringUtils.isNotBlank(university) && !"null".equals(university)){
+            userQueryWrapper.apply("user.id in ( select student_id from student_information where university_id = '"+university+"')");
+        }
+
+        IPage result = userService.pageStu(page,userQueryWrapper);
+
+        return Result.suc(result.getRecords(),result.getTotal());
+    }
+
+    /**学校分页查找*/
+    @PostMapping("/listPageUniver")
+    public Result listPageUinver(@RequestBody QueryPageParam param){
+        HashMap hashMap = param.getParam();
+        String name = (String)hashMap.get("name");
+        String status = (String)hashMap.get("status");
+        String roleId = (String)hashMap.get("roleId");
+        String address = (String)hashMap.get("address");
+
+        IPage<User> page = new Page<>() ;
+        page.setCurrent(param.getPageNum());
+        page.setSize(param.getPageSize());
+
+        LambdaQueryWrapper<User> userQueryWrapper = new LambdaQueryWrapper<>();
+
+        if(StringUtils.isNotBlank(roleId)){
+            userQueryWrapper.eq(User::getRoleId,roleId);
+        }
+        if(StringUtils.isNotBlank(status)){
+            userQueryWrapper.eq(User::getRoleId,status);
+        }
+        userQueryWrapper.isNull(User::getAffiliation);
+
+        if((StringUtils.isNotBlank(name) && !"null".equals(name))&&(StringUtils.isNotBlank(address) && !"null".equals(address))){
+            userQueryWrapper.apply("user.id in ( select user_id from university_information where name like '%"+name+"%' and address like '%"+address+"%')");
+        }else if(StringUtils.isNotBlank(name) && !"null".equals(name)){
+            userQueryWrapper.apply("user.id in ( select user_id from university_information where name like '%"+name+"%')");
+        }else if(StringUtils.isNotBlank(address) && !"null".equals(address)){
+            userQueryWrapper.apply("user.id in ( select user_id from university_information where address like '%"+address+"%')");
+        }
+
+        IPage result = userService.pageUniver(page,userQueryWrapper);
+
+        return Result.suc(result.getRecords(),result.getTotal());
+    }
+
+    /**单位分页查找*/
+    @PostMapping("/listPageUnit")
+    public Result listPageUnit(@RequestBody QueryPageParam param){
+        HashMap hashMap = param.getParam();
+        String name = (String)hashMap.get("name");
+        String status = (String)hashMap.get("status");
+        String roleId = (String)hashMap.get("roleId");
+        String address = (String)hashMap.get("address");
+
+        IPage<User> page = new Page<>() ;
+        page.setCurrent(param.getPageNum());
+        page.setSize(param.getPageSize());
+
+        LambdaQueryWrapper<User> userQueryWrapper = new LambdaQueryWrapper<>();
+
+        if(StringUtils.isNotBlank(roleId)){
+            userQueryWrapper.eq(User::getRoleId,roleId);
+        }
+        if(StringUtils.isNotBlank(status)){
+            userQueryWrapper.eq(User::getRoleId,status);
+        }
+        userQueryWrapper.isNull(User::getAffiliation);
+
+        if((StringUtils.isNotBlank(name) && !"null".equals(name))&&(StringUtils.isNotBlank(address) && !"null".equals(address))){
+            userQueryWrapper.apply("user.id in ( select user_id from unit_information where name like '%"+name+"%' and address like '%"+address+"%')");
+        }else if(StringUtils.isNotBlank(name) && !"null".equals(name)){
+            userQueryWrapper.apply("user.id in ( select user_id from unit_information where name like '%"+name+"%')");
+        }else if(StringUtils.isNotBlank(address) && !"null".equals(address)){
+            userQueryWrapper.apply("user.id in ( select user_id from unit_information where address like '%"+address+"%')");
+        }
+
+        IPage result = userService.pageUnit(page,userQueryWrapper);
+
+        return Result.suc(result.getRecords(),result.getTotal());
+    }
+
+
+    /** 根据id查询*/
+    @GetMapping("listCollege")
+    public Result listCollege(@RequestParam Integer id){
+        List<User> users = userService.listCollege(id);
+        if(users.size()> 0){
+            return Result.suc(users);
+        }
+
+        return Result.fail();
+
+    }
+
+    /** 删除*/
+    @GetMapping("/deleteById")
+    public Result delete(@RequestParam Integer id){
+        return userService.removeById(id)?Result.suc():Result.fail();
+    }
+
+    /** 更新*/
+    @PostMapping("/update")
+    public Result update(@RequestBody User user){
+        return userService.updateById(user)?Result.suc():Result.fail();
+    }
+
+    /** 注册或添加*/
+    @PostMapping("/save")
+    public Result save(@RequestBody User user){
+        return userService.save(user)?Result.suc():Result.fail();
+    }
 
 
     /**更改验证码图片*/
@@ -232,10 +367,29 @@ public class UserController {
 
         try{
             file.transferTo(new File(path));
-            //文件路径保存到数据库中从而读取
+
         }catch (Exception e){
             e.printStackTrace();
         }
+        return Result.uploadSuc(url);
+    }
+
+    /**简历文件上传*/
+    @RequestMapping("/toUploadFile")
+    public Result toUploadFile(MultipartFile file){
+
+        long time=System.currentTimeMillis();
+        //这里我采用绝对路径
+        String path="D:/workspace/unit-un-demo/unit-university/src/main/resources/static/resumeFile/resume"+time+"."+"doc";
+        //String path="D:/workspace/unit-un-demo/unit-university/src/main/resources/static/resumeFile/file"+time+"."+"pdf";
+        String url = "http://localhost:8082/"+path.substring(path.indexOf("resumeFile/"));
+        try{
+            file.transferTo(new File(path));
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
         return Result.uploadSuc(url);
     }
 }

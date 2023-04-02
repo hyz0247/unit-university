@@ -9,6 +9,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 
 /**
  * <p>
@@ -24,14 +26,25 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     private UserMapper userMapper;
 
+
     @Override
-    public IPage pageC(IPage<User> page) {
-        return userMapper.pageC(page);
+    public IPage pageStu(IPage<User> page, Wrapper wrapper) {
+        return userMapper.pageStu(page,wrapper);
     }
 
     @Override
-    public IPage pageCC(IPage<User> page, Wrapper wrapper) {
-        return userMapper.pageCC(page,wrapper);
+    public IPage pageUniver(IPage<User> page, Wrapper wrapper) {
+        return userMapper.pageUniver(page,wrapper);
+    }
+
+    @Override
+    public IPage pageUnit(IPage<User> page, Wrapper wrapper) {
+        return userMapper.pageUnit(page,wrapper);
+    }
+
+    @Override
+    public List<User> listCollege(Integer affiliation) {
+        return userMapper.listCollege(affiliation);
     }
 
 

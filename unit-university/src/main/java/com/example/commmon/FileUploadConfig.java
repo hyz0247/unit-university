@@ -11,8 +11,10 @@ public class FileUploadConfig implements WebMvcConfigurer {
 //        registry.addResourceHandler("/**")
 //                .addResourceLocations("classpath:/resources/")
 //                .addResourceLocations("classpath:/static/images");
-        registry.addResourceHandler("/images/**").
-                addResourceLocations("file:///D:/workspace/unit-un-demo/unit-university/src/main/resources/static/images/");
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations("file:///D:/workspace/unit-un-demo/unit-university/src/main/resources/static/images/")
+                .addResourceLocations("classpath:/static/resumeFile")
+                .addResourceLocations("classpath:/static/images");
         //如果不知道如何以file开头就用浏览器打开该图片
     }
 }

@@ -7,6 +7,9 @@ import com.example.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
+
+import java.util.List;
 
 /**
  * <p>
@@ -19,7 +22,12 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
 
-    IPage<User> pageC(IPage<User> page);
 
-    IPage<User> pageCC(IPage<User> page, @Param(Constants.WRAPPER) Wrapper wrapper);
+    IPage<User> pageStu(IPage<User> page, @Param(Constants.WRAPPER) Wrapper wrapper);
+
+    IPage<User> pageUniver(IPage<User> page, @Param(Constants.WRAPPER) Wrapper wrapper);
+
+    IPage<User> pageUnit(IPage<User> page, @Param(Constants.WRAPPER) Wrapper wrapper);
+
+    List<User> listCollege(Integer affiliation);
 }
