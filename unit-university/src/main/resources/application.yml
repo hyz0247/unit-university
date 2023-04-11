@@ -33,16 +33,6 @@ spring:
           min-idle: 0   # 连接池中的最小空闲连接
 
 
-  #阿里云短信
-  aliyun:
-    send-msg:
-      regionId: cn-hangzhou
-      accessKeyId: LTAI5tQnM7MgWQXDFJ38xT7b
-      accessKeySecret: IX2PMk3tpIJREclerx1XQKLeog4LxE
-      TemplateCode: SMS_263415261
-      SignName: 黄陈鸿的博客
-
-
 
 
 

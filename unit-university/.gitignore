@@ -36,3 +36,4 @@ build/
 /mvnw.cmd
 /unit-university.iml
 /.mvn/
+/src/main/java/com/example/commmon/CodeGenerator.java

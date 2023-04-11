@@ -5,14 +5,12 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.commmon.AliyunSendMsgConfig;
 import com.example.commmon.QueryPageParam;
 import com.example.commmon.Result;
 import com.example.entity.*;
 import com.example.mapper.*;
 import com.example.service.*;
 import com.example.utils.CheckCodeUtil;
-
 import com.example.utils.SMSUtils;
 import com.example.utils.ValidateCodeUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -20,18 +18,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.redis.core.RedisTemplate;
-
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+
 
 /**
  * <p>
@@ -73,8 +68,6 @@ public class UserController {
     // RedisTemplate
     @Resource
     private RedisTemplate<String,String> redisTemplate;
-    @Autowired
-    private SendMsgService sendMsgService;
 
 
 
@@ -239,8 +232,6 @@ public class UserController {
         List list = userService.lambdaQuery().eq(User::getUsername, username).list();
         return list.size()>0?Result.suc(list):Result.fail();
     }
-
-
 
     /**学生分页查找*/
     @PostMapping("/listPageStu")
