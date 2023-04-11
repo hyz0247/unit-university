@@ -12,6 +12,12 @@ public class  Result {
     private Object data;//数据
     private String imgUrl;
 
+    public static Result fail(String msg){
+        return result(400,msg,0L,null);
+    }
+    public static Result suc(String msg ){
+        return result(200,msg,0L,null);
+    }
     public static Result fail(){
         return result(400,"失败",0L,null);
     }

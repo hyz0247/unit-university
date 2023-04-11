@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.commmon.AliyunSendMsgConfig;
 import com.example.commmon.QueryPageParam;
 import com.example.commmon.Result;
 import com.example.entity.*;
@@ -12,11 +13,15 @@ import com.example.mapper.*;
 import com.example.service.*;
 import com.example.utils.CheckCodeUtil;
 
+import com.example.utils.SMSUtils;
+import com.example.utils.ValidateCodeUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.data.redis.core.RedisTemplate;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,6 +30,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <p>
@@ -63,6 +70,92 @@ public class UserController {
 
     @Autowired
     private UniversityInformationService universityInformationService;
+    // RedisTemplate
+    @Resource
+    private RedisTemplate<String,String> redisTemplate;
+    @Autowired
+    private SendMsgService sendMsgService;
+
+
+
+
+    @PostMapping("/sendMsg")
+    public Result sendMsg(@RequestParam String phone){
+
+        // 获取手机号
+        //String phone = user.getPhone();
+        HttpSession session = request.getSession();
+
+        if (StringUtils.isNotBlank(phone)) {
+
+            // 随机生成4位验证码
+            String checkCode = String.valueOf(ValidateCodeUtils.generateValidateCode(4));
+            log.info("code={}",checkCode);
+            // 调用阿里云提供的短信服务API完成发送短信
+            SMSUtils.sendMessage("黄陈鸿的博客","SMS_263415261",phone,checkCode);
+            // 将生成的验证码保存到Redis中并设置有效期两分钟
+            //redisTemplate.opsForValue().set(phone, checkCode, 2, TimeUnit.MINUTES);
+            //没有redis 将生成的验证码存到Session
+            session.setAttribute(phone,checkCode);
+
+            return Result.suc();
+        }
+        return Result.fail();
+
+    }
+
+    @PostMapping("/checkPhoneCode")
+    public Result checkPhoneCode(@RequestParam String phone,@RequestParam String code){
+
+
+        HttpSession session = request.getSession();
+        String checkCodeGen = (String)session.getAttribute(phone);
+
+
+        if(checkCodeGen.equalsIgnoreCase(code)){
+            List list = userService.lambdaQuery()
+                    .eq(User::getUsername, phone).list();
+            if(list.size()>0){
+                User user1 = (User)list.get(0);
+                List menuList = menuService.lambdaQuery().like(Menu::getMenuRight, user1.getRoleId()).list();
+                HashMap result = new HashMap();
+                switch (user1.getRoleId()){
+                    case 0:
+                        if(adinS.lambdaQuery().eq(AdminInformation::getUserId,user1.getId()).list().size()>0){
+                            AdminInformation adminInformation = adinS.lambdaQuery().eq(AdminInformation::getUserId,user1.getId()).list().get(0);
+                            result.put("personInfo",adminInformation);
+                        }else result.put("personInfo",new HashMap<>());
+                        break;
+                    case 1:
+                        if(studentInformationService.lambdaQuery().eq(StudentInformation::getStudentId,user1.getId()).list().size()>0){
+                            StudentInformation studentInformation = studentInformationService.lambdaQuery().eq(StudentInformation::getStudentId,user1.getId()).list().get(0);
+                            result.put("personInfo",studentInformation);
+                        }else result.put("personInfo",new HashMap<>());
+                        break;
+                    case 2:
+                        if(unitInformationService.lambdaQuery().eq(UnitInformation::getUserId,user1.getId()).list().size()>0){
+                            UnitInformation unitInformation = unitInformationService.lambdaQuery().eq(UnitInformation::getUserId,user1.getId()).list().get(0);
+                            result.put("personInfo",unitInformation);
+                        }else result.put("personInfo",new HashMap<>());
+                        break;
+                    case 3:
+                        if(universityInformationService.lambdaQuery().eq(UniversityInformation::getUserId,user1.getId()).list().size()>0){
+                            UniversityInformation universityInformation = universityInformationService.lambdaQuery().eq(UniversityInformation::getUserId,user1.getId()).list().get(0);
+                            result.put("personInfo",universityInformation);
+                        }else result.put("personInfo",new HashMap<>());
+                        break;
+                }
+                result.put("menuList",menuList);
+                result.put("user",user1);
+                return Result.suc(result);
+            }else return Result.fail("用户不存在");
+            }else return Result.fail("验证码错误");
+        //return Result.fail();
+    }
+
+   /** **/
+
+
 
 
 
@@ -146,6 +239,8 @@ public class UserController {
         List list = userService.lambdaQuery().eq(User::getUsername, username).list();
         return list.size()>0?Result.suc(list):Result.fail();
     }
+
+
 
     /**学生分页查找*/
     @PostMapping("/listPageStu")
