@@ -45,6 +45,7 @@ public class CodeGenerator {
         // 全局配置
         GlobalConfig gc = new GlobalConfig();
         String projectPath = System.getProperty("user.dir")+"/unit-university";
+        System.out.println(projectPath);
         gc.setOutputDir(projectPath + "/src/main/java");
         gc.setAuthor("hyz02");
         gc.setOpen(false);
@@ -57,7 +58,7 @@ public class CodeGenerator {
         // 数据源配置
         DataSourceConfig dsc = new DataSourceConfig();
         // ⼀、修改数据源
-        dsc.setUrl("jdbc:mysql://localhost:3306/unit_university?useUnicode=true&characterEncoding=UTF8&useSSL=false");
+        dsc.setUrl("jdbc:mysql://192.168.0.108:3306/unit_university?useUnicode=true&characterEncoding=UTF8&useSSL=false");
                 // dsc.setSchemaName("public");
                 dsc.setDriverName("com.mysql.jdbc.Driver");
         dsc.setUsername("root");

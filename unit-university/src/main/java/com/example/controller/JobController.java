@@ -149,4 +149,31 @@ public class JobController {
 
     }
 
+    /** 根据接收前端传来的selectedIndustry，查询不同行业收藏数最多的5个*/
+    @PostMapping ("/listByFavorite")
+    public Result listByFavorite(@RequestParam String industry){
+        Integer typeID=0;
+        //根据selectedIndustry给typeID赋值，当selectedIndustry为'it'时，typeID为1，查询IT行业收藏数最多的5个;当selectedIndustry为'finance'时，typeID为2，查询金融行业收藏数最多的5个;
+        //当selectedIndustry为'realestate'时，typeID为3，查询房地产行业收藏数最多的5个;当selectedIndustry为'education'时，typeID为4，查询教育行业收藏数最多的5个;当selectedIndustry为'automotive'时，typeID为5，查询其他行业收藏数最多的5个;
+        if(industry.equals("it")){
+            typeID=1;
+        }else if(industry.equals("finance")){
+            typeID=2;
+        }
+        else if(industry.equals("medical")){
+            typeID=3;
+        }
+        else if(industry.equals("education")){
+            typeID=4;
+        }
+        else if(industry.equals("automotive")){
+            typeID=5;
+        }
+
+        List<Job> list = jobService.lambdaQuery().eq(Job::getTypeId,typeID).orderByDesc(Job::getCollectNumber).last("limit 5").list();
+//        List<Job> list = jobService.lambdaQuery().orderByDesc(Job::getCollectNumber).last("limit 5").list();
+        return Result.suc(list);
+    }
+
+
 }

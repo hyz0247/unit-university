@@ -49,7 +49,7 @@ public class Job implements Serializable {
     @ApiModelProperty(value = "薪资上限(月薪/单位为k(千))")
     private Integer salaryMax;
 
-    @ApiModelProperty(value = "学历要求(0:专科以上，1：本科以上2:硕士以上)")
+    @ApiModelProperty(value = "学历要求(0:专科以上，1：本科以上 2:硕士以上)")
     private String eduRequirement;
 
     @ApiModelProperty(value = "性别要求(0:女 1：男)")
