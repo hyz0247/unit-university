@@ -1,9 +1,13 @@
 package com.example.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.time.LocalDateTime;
 import java.io.Serializable;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
@@ -15,37 +19,29 @@ import lombok.EqualsAndHashCode;
  * </p>
  *
  * @author hyz02
- * @since 2023-03-22
+ * @since 2023-04-04
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@ApiModel(value="UnitInformation对象", description="")
-public class UnitInformation implements Serializable {
+@ApiModel(value="CompanyWrittenTests对象", description="")
+public class CompanyWrittenTests implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    private String name;
+    private Integer companyId;
 
-    private String address;
-
-    private String contactName;
-
-    private String contactPhone;
-
-    private String email;
+    private String title;
 
     private String description;
 
-    private String website;
+    @TableField(fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss",timezone = "GMT+8")
+    private LocalDateTime createTime;
 
-    private String logo;
-
-    private Integer userId;
-
-    private String unitTag;
+    private String answer;
 
 
 }

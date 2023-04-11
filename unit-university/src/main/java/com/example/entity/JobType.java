@@ -29,7 +29,6 @@ public class JobType implements Serializable {
 
     private String name;
 
-    @TableField("Job_parent")
     private Integer jobParent;
 
     private String description;

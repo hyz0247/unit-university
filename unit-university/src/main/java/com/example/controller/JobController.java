@@ -60,6 +60,7 @@ public class JobController {
         String unit = (String)hashMap.get("unit");
         String salaryMin = (String)hashMap.get("salaryMin");
         String salaryMax = (String)hashMap.get("salaryMax");
+        Integer size;
 
         IPage<Job> page = new Page<>() ;
         page.setCurrent(param.getPageNum());
@@ -89,7 +90,9 @@ public class JobController {
         }
 
         IPage<Job> result = jobMapper.pageList(page,jobQueryWrapper);
-        for (int i=0;i<result.getTotal();i++){
+        //System.out.println(result.getTotal());
+        //System.out.println(result.getRecords());
+        for (int i=0;i<result.getRecords().size();i++){
             if (roleId.equals("1")){
                 List<Collect> list = collectService.lambdaQuery().eq(Collect::getJobId, result.getRecords().get(i).getId())
                         .eq(Collect::getStudentId, userId).list();

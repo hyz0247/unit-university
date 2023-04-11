@@ -37,5 +37,7 @@ public class Menu implements Serializable {
 
     private String menuRight;
 
+    private String menuClick;
+
 
 }

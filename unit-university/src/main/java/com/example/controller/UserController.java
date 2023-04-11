@@ -264,10 +264,10 @@ public class UserController {
 
         LambdaQueryWrapper<User> userQueryWrapper = new LambdaQueryWrapper<>();
 
-        if(StringUtils.isNotBlank(roleId)){
+        if(StringUtils.isNotBlank(roleId)&&!"null".equals(roleId)){
             userQueryWrapper.eq(User::getRoleId,roleId);
         }
-        if(StringUtils.isNotBlank(status)){
+        if(StringUtils.isNotBlank(status)&&!"null".equals(status)){
             userQueryWrapper.eq(User::getRoleId,status);
         }
         userQueryWrapper.isNull(User::getAffiliation);
@@ -302,6 +302,29 @@ public class UserController {
     @GetMapping("/deleteById")
     public Result delete(@RequestParam Integer id){
         return userService.removeById(id)?Result.suc():Result.fail();
+    }
+
+    /** 根据ID查用户信息*/
+    @GetMapping("/listById")
+    public Result listById(@RequestParam Integer userId){
+        User user = userMapper.selectById(userId);
+        if (user.getRoleId().equals(0)){
+            List<AdminInformation> list = adinS.list();
+            return Result.suc(list);
+        }
+        if (user.getRoleId().equals(1)){
+            List<StudentInformation> list = studentInformationService.list();
+            return Result.suc(list);
+        }
+        if (user.getRoleId().equals(2)){
+            List<UniversityInformation> list = universityInformationService.list();
+            return Result.suc(list);
+        }
+        if (user.getRoleId().equals(3)){
+            List<UnitInformation> list = unitInformationService.list();
+            return Result.suc(list);
+        }
+        return Result.fail();
     }
 
     /** 更新*/
@@ -380,7 +403,7 @@ public class UserController {
 
         long time=System.currentTimeMillis();
         //这里我采用绝对路径
-        String path="D:/workspace/unit-un-demo/unit-university/src/main/resources/static/resumeFile/resume"+time+"."+"doc";
+        String path="D:/workspace/unit-un-demo/unit-university/src/main/resources/static/resumeFile/resume"+time+"."+"docx";
         //String path="D:/workspace/unit-un-demo/unit-university/src/main/resources/static/resumeFile/file"+time+"."+"pdf";
         String url = "http://localhost:8082/"+path.substring(path.indexOf("resumeFile/"));
         try{

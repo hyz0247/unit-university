@@ -18,8 +18,10 @@ public class MyMetaObjectHandler implements MetaObjectHandler {
         log.info("insert...");
         this.setFieldValByName("updatetime", LocalDateTime.now(), metaObject);
         this.setFieldValByName("createtime", LocalDateTime.now(), metaObject);
+        this.setFieldValByName("createTime", LocalDateTime.now(), metaObject);
         this.setFieldValByName("applyDate", LocalDateTime.now(), metaObject);
         this.setFieldValByName("updateTime", LocalDateTime.now(), metaObject);
+        this.setFieldValByName("sendTime", LocalDateTime.now(), metaObject);
     }
 
     @Override
