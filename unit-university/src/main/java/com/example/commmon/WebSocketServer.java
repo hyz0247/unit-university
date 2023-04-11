@@ -56,11 +56,11 @@ public class WebSocketServer {
         }
         //sessionMap.put(username, session);
         //log.info("有新用户加入，username={}, 当前在线人数为：{}", username, sessionMap.size());
-//        List<Messages> messages = messagesService.lambdaQuery()
-//                .eq(Messages::getType, "私信")
-//                .eq(Messages::getStatus, 0)
-//                .eq(Messages::getReceiverId,username)
-//                .or().eq(Messages::getSenderId,username).list();
+        List<Messages> messages = messagesService.lambdaQuery()
+                .eq(Messages::getType, "私信")
+                .eq(Messages::getStatus, 0)
+                .eq(Messages::getReceiverId,username)
+                .or().eq(Messages::getSenderId,username).list();
 
         JSONObject result = new JSONObject();
         JSONArray array = new JSONArray();
@@ -103,41 +103,33 @@ public class WebSocketServer {
     public void onMessage(String message, Session session, @PathParam("username") String username) {
         UserService userService = applicationContext.getBean(UserService.class);
         MessagesService messagesService = applicationContext.getBean(MessagesService.class);
-        if (message.equals("获取历史消息")){
-                    List<Messages> messages = messagesService.lambdaQuery()
-                        .eq(Messages::getType, "私信")
-                        .eq(Messages::getReceiverId,username)
-                        .or().eq(Messages::getSenderId,username).list();
-        }else {
-            //log.info("服务端收到用户username={}的消息:{}", username, message);
-            JSONObject obj = JSONUtil.parseObj(message);
-            String toUsername = obj.getStr("to"); // to表示发送给哪个用户，比如 admin
-            String text = obj.getStr("text"); // 发送的消息文本  hello
-            // {"to": "admin", "text": "聊天文本"}
-            Messages messages = new Messages();
-            messages.setContent(text);
-            Integer receiverId = userService.lambdaQuery().eq(User::getUsername, toUsername).list().get(0).getId();
-            Integer senderId = userService.lambdaQuery().eq(User::getUsername, username).list().get(0).getId();
-            messages.setReceiverId(receiverId);
-            messages.setSenderId(senderId);
-            messages.setType("私信");
-            messages.setStatus("0");
-            messagesService.save(messages);
+        //log.info("服务端收到用户username={}的消息:{}", username, message);
+        JSONObject obj = JSONUtil.parseObj(message);
+        String toUsername = obj.getStr("to"); // to表示发送给哪个用户，比如 admin
+        String text = obj.getStr("text"); // 发送的消息文本  hello
+        // {"to": "admin", "text": "聊天文本"}
+        Messages messages = new Messages();
+        messages.setContent(text);
+        Integer receiverId = userService.lambdaQuery().eq(User::getUsername, toUsername).list().get(0).getId();
+        Integer senderId = userService.lambdaQuery().eq(User::getUsername, username).list().get(0).getId();
+        messages.setReceiverId(receiverId);
+        messages.setSenderId(senderId);
+        messages.setType("私信");
+        messages.setStatus("0");
+        messagesService.save(messages);
 
-            Session toSession = sessionMap.get(toUsername); // 根据 to用户名来获取 session，再通过session发送消息文本
-            if (toSession != null) {
-                // 服务器端 再把消息组装一下，组装后的消息包含发送人和发送的文本内容
-                // {"from": "zhang", "text": "hello"}
-                JSONObject jsonObject = new JSONObject();
-                jsonObject.set("from", username);  // from 是 zhang
-                jsonObject.set("text", text);  // text 同上面的text
-                this.sendMessage(jsonObject.toString(), toSession);
-                //log.info("发送给用户username={}，消息：{}", toUsername, jsonObject.toString());
-            } else {
-                log.info("发送失败，未找到用户username={}的session", toUsername);
-            }
+        Session toSession = sessionMap.get(toUsername); // 根据 to用户名来获取 session，再通过session发送消息文本
+        if (toSession != null) {
+            // 服务器端 再把消息组装一下，组装后的消息包含发送人和发送的文本内容
+            // {"from": "zhang", "text": "hello"}
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.set("from", username);  // from 是 zhang
+            jsonObject.set("text", text);  // text 同上面的text
+            this.sendMessage(jsonObject.toString(), toSession);
+            //log.info("发送给用户username={}，消息：{}", toUsername, jsonObject.toString());
+        } else {
+            //log.info("发送失败，未找到用户username={}的session", toUsername);
         }
-
     }
     @OnError
     public void onError(Session session, Throwable error) {
