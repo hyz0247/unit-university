@@ -12,7 +12,7 @@ spring:
   # type: com.alibaba.druid.pool.DruidDataSource
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://192.168.0.108/unit_university
+    url: jdbc:mysql://localhost/unit_university
     username: root
     password: 20020407
 

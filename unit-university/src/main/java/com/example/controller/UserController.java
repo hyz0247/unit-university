@@ -13,6 +13,8 @@ import com.example.service.*;
 import com.example.utils.CheckCodeUtil;
 import com.example.utils.SMSUtils;
 import com.example.utils.ValidateCodeUtils;
+import com.example.vo.BarVO;
+import com.example.vo.PieVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -391,8 +393,8 @@ public class UserController {
     }
 
     /** 根据ID查用户信息*/
-    @GetMapping("/listById")
-    public Result listById(@RequestParam Integer userId){
+    @GetMapping("/listByIdInfo")
+    public Result listByIdInfo(@RequestParam Integer userId){
         User user = userMapper.selectById(userId);
         if (user.getRoleId().equals(0)){
             List<AdminInformation> list = adinS.list();
@@ -411,6 +413,13 @@ public class UserController {
             return Result.suc(list);
         }
         return Result.fail();
+    }
+
+    /** 根据ID查用户*/
+    @GetMapping("/listById")
+    public Result listById(@RequestParam Integer userId){
+        User user = userMapper.selectById(userId);
+        return Result.suc(user);
     }
 
     /** 更新*/
@@ -500,5 +509,19 @@ public class UserController {
         }
 
         return Result.uploadSuc(url);
+    }
+
+    /** 查看学生、学校、单位注册用户的数量*/
+    @GetMapping("/listRegister")
+    public Result listRegister(){
+
+        BarVO barVO = userService.listRoleId();
+        List<PieVO> pieVOList = userService.listRoleIdPie();
+
+        HashMap hashMap = new HashMap<>();
+        hashMap.put("barVO",barVO);
+        hashMap.put("pieVOList",pieVOList);
+
+        return Result.suc(hashMap);
     }
 }

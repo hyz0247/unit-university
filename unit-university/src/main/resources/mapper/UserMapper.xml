@@ -41,4 +41,15 @@
                  LEFT JOIN college ON user.id=college.user_id
         WHERE role_id = 2 and affiliation=#{affiliation}
     </select>
+    <select id="listRoleId" resultType="com.example.entity.UserList">
+        SELECT
+            CASE
+                WHEN role_id = 0 THEN '管理员'
+                WHEN role_id = 1 THEN '学生'
+                WHEN role_id = 2 THEN '学校'
+                WHEN role_id = 3 THEN '单位'
+                END AS role_name,COUNT(*) AS count
+        FROM user
+        GROUP BY role_name;
+    </select>
 </mapper>

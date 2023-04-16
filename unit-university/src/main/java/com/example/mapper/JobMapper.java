@@ -5,8 +5,11 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.example.entity.Job;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.example.entity.QuarterList;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * <p>
@@ -19,6 +22,7 @@ import org.apache.ibatis.annotations.Param;
 @Mapper
 public interface JobMapper extends BaseMapper<Job> {
 
-
     IPage<Job> pageList(IPage<Job> page, @Param(Constants.WRAPPER) Wrapper wrapper);
+
+    List<QuarterList> quarterList(@Param(Constants.WRAPPER) Wrapper wrapper);
 }

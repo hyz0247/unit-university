@@ -14,5 +14,8 @@
     <sql id="Base_Column_List">
         id, name, Job_parent, description
     </sql>
+    <select id="listPage" resultType="com.example.entity.JobType">
+        select * from job_type ${ew.customSqlSegment}
+    </select>
 
 </mapper>

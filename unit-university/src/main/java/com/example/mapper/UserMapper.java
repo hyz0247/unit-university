@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Constants;
 import com.example.entity.User;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.example.entity.UserList;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -30,4 +31,6 @@ public interface UserMapper extends BaseMapper<User> {
     IPage<User> pageUnit(IPage<User> page, @Param(Constants.WRAPPER) Wrapper wrapper);
 
     List<User> listCollege(Integer affiliation);
+
+    List<UserList> listRoleId();
 }

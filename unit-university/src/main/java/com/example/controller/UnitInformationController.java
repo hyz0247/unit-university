@@ -62,4 +62,11 @@ public class UnitInformationController {
 
     }
 
+    /** 查询除附属外的所有信息*/
+    @GetMapping("listUnit")
+    public Result listUnit(){
+        List<UnitInformation> list = unitInformationService.listUnit();
+        return Result.suc(list);
+    }
+
 }

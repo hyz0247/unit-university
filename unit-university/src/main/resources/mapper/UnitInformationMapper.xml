@@ -21,5 +21,10 @@
     <sql id="Base_Column_List">
         company_id, name, address, contact_name, contact_phone, email, description, website, logo, create_time, user_id
     </sql>
+    <select id="listUnit" resultType="com.example.entity.UnitInformation">
+        SELECT unit_information.* FROM unit_information,user
+        WHERE user.id = unit_information.user_id
+          and user.affiliation IS NULL
+    </select>
 
 </mapper>

@@ -48,38 +48,51 @@ public class WebSocketServer {
         //将全部用户查找出来（除自己外）
         UserService userService = applicationContext.getBean(UserService.class);
         MessagesService messagesService = applicationContext.getBean(MessagesService.class);
-        List<User> list = userService.lambdaQuery().ne(User::getUsername, username).list();
+        List<User> list = userService.lambdaQuery().list();
+        Integer thisUserId = userService.lambdaQuery().eq(User::getUsername,username).list().get(0).getId();
 
-        for (User userName : list){
-            String username1 = userName.getUsername();
-            sessionMap.put(username1, session);
-        }
-        //sessionMap.put(username, session);
+
+//        for (User userName : list){
+//            String username1 = userName.getUsername();
+//            if (username1.equals(username)){
+//                thisUserId = userName.getId();
+//            }
+//            sessionMap.put(username1, session);
+//        }
+        sessionMap.put(username, session);
         //log.info("有新用户加入，username={}, 当前在线人数为：{}", username, sessionMap.size());
-        List<Messages> messages = messagesService.lambdaQuery()
-                .eq(Messages::getType, "私信")
-                .eq(Messages::getStatus, 0)
-                .eq(Messages::getReceiverId,username)
-                .or().eq(Messages::getSenderId,username).list();
 
         JSONObject result = new JSONObject();
         JSONArray array = new JSONArray();
         result.set("users", array);
 
-        for (Object key : sessionMap.keySet()) {
+        for (User user : list) {
             JSONObject jsonObject = new JSONObject();
-            jsonObject.set("username", key);
-//            for (Messages message : messages) {
-//                User sendUser = userService.lambdaQuery().eq(User::getId, message.getSenderId()).list().get(0);
-//                User receiverUser = userService.lambdaQuery().eq(User::getId, message.getReceiverId()).list().get(0);
-//                if (receiverUser.getUsername().equals(key)){
-//                    jsonObject.set("priText", message.getContent());
-//                }else if (receiverUser.getUsername().equals(username)){
-//
+            jsonObject.set("username", user.getUsername());
+            jsonObject.set("userList", user);
+            int size = messagesService.lambdaQuery()
+                    .eq(Messages::getSenderId, user.getId())
+                    .eq(Messages::getReceiverId,thisUserId)
+                    .eq(Messages::getStatus, 0)
+                    .eq(Messages::getType, "私信")
+                    .list().size();
+            jsonObject.set("size", size);
+            array.add(jsonObject);
+//            for (User userName : list){
+//                if (userName.getUsername().equals(key)){
+//                    jsonObject.set("userList", userName);
+//                    int size = messagesService.lambdaQuery()
+//                            .eq(Messages::getSenderId, userName.getId())
+//                            .eq(Messages::getReceiverId,thisUserId)
+//                            .eq(Messages::getStatus, 0)
+//                            .eq(Messages::getType, "私信")
+//                            .list().size();
+//                    jsonObject.set("size", size);
 //                }
 //            }
+
             // {"username", "zhang", "username": "admin"}
-            array.add(jsonObject);
+
         }
 //        {"users": [{"username": "zhang"},{ "username": "admin"}]}
         sendAllMessage(JSONUtil.toJsonStr(result));  // 后台发送消息给所有的客户端
@@ -101,36 +114,90 @@ public class WebSocketServer {
      */
     @OnMessage
     public void onMessage(String message, Session session, @PathParam("username") String username) {
+
         UserService userService = applicationContext.getBean(UserService.class);
         MessagesService messagesService = applicationContext.getBean(MessagesService.class);
-        //log.info("服务端收到用户username={}的消息:{}", username, message);
         JSONObject obj = JSONUtil.parseObj(message);
-        String toUsername = obj.getStr("to"); // to表示发送给哪个用户，比如 admin
-        String text = obj.getStr("text"); // 发送的消息文本  hello
-        // {"to": "admin", "text": "聊天文本"}
-        Messages messages = new Messages();
-        messages.setContent(text);
-        Integer receiverId = userService.lambdaQuery().eq(User::getUsername, toUsername).list().get(0).getId();
-        Integer senderId = userService.lambdaQuery().eq(User::getUsername, username).list().get(0).getId();
-        messages.setReceiverId(receiverId);
-        messages.setSenderId(senderId);
-        messages.setType("私信");
-        messages.setStatus("0");
-        messagesService.save(messages);
+        String fromUsername = obj.getStr("from");// from表示发送给哪个用户，比如 admin
+        String toUsername = obj.getStr("to");// to表示发送给哪个用户，比如 admin
 
-        Session toSession = sessionMap.get(toUsername); // 根据 to用户名来获取 session，再通过session发送消息文本
-        if (toSession != null) {
-            // 服务器端 再把消息组装一下，组装后的消息包含发送人和发送的文本内容
-            // {"from": "zhang", "text": "hello"}
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.set("from", username);  // from 是 zhang
-            jsonObject.set("text", text);  // text 同上面的text
-            this.sendMessage(jsonObject.toString(), toSession);
-            //log.info("发送给用户username={}，消息：{}", toUsername, jsonObject.toString());
-        } else {
-            //log.info("发送失败，未找到用户username={}的session", toUsername);
+
+        Integer fromId = userService.lambdaQuery().eq(User::getUsername, fromUsername).list().get(0).getId();
+        Integer toId = userService.lambdaQuery().eq(User::getUsername, toUsername).list().get(0).getId();
+
+        if (obj.getStr("text").equals("获取历史记录")){
+            List<Messages> messages = messagesService.lambdaQuery()
+                    .apply("((sender_id = "+fromId+" AND receiver_id="+toId+") or (receiver_id="+fromId+" and sender_id="+toId+")) and type = '私信'")
+                    .orderByAsc(Messages::getSendTime).list();
+//                    .eq(Messages::getSenderId,fromId).eq(Messages::getReceiverId,toId)
+//                    .or().eq(Messages::getSenderId,toId).eq(Messages::getReceiverId,fromId)
+//                    .eq(Messages::getType, "私信").orderByAsc(Messages::getSendTime).list();
+
+            //JSONObject jsonObject = new JSONObject();
+            Session toSession = sessionMap.get(fromUsername);
+            if (toSession != null) {
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.set("from", username);  // from 是 zhang
+                jsonObject.set("textList", messages);  // text 同上面的text
+                this.sendMessage(jsonObject.toString(), toSession);
+                //log.info("发送给用户username={}，消息：{}", toUsername, jsonObject.toString());
+            } else {
+                //log.info("发送失败，未找到用户username={}的session", toUsername);
+            }
+//            for (Messages messages1 : messages) {
+//                User sendUser = userService.lambdaQuery().eq(User::getId, messages1.getSenderId()).list().get(0);
+//                User receiverUser = userService.lambdaQuery().eq(User::getId, messages1.getReceiverId()).list().get(0);
+//                Session toSession = sessionMap.get(receiverUser.getUsername());
+//
+//                if (sendUser.getUsername().equals(username)){
+//                    jsonObject.set("from", username);
+//                    jsonObject.set("text", messages1.getContent());
+//                    this.sendMessage(jsonObject.toString(), toSession);
+//                }else if (sendUser.getUsername().equals(toUsername)){
+//                    jsonObject.set("from", toUsername);
+//                    jsonObject.set("text", messages1.getContent());
+//                    this.sendMessage(jsonObject.toString(), toSession);
+//                }
+//            }
+
+
+        }else {
+
+            //log.info("服务端收到用户username={}的消息:{}", username, message);
+            String text = obj.getStr("text"); // 发送的消息文本  hello
+            // {"to": "admin", "text": "聊天文本"}
+            Session fromSession = sessionMap.get(fromUsername);
+            Session toSession = sessionMap.get(toUsername);
+            Messages messages = new Messages();
+            messages.setContent(text);
+            Integer receiverId = userService.lambdaQuery().eq(User::getUsername, toUsername).list().get(0).getId();
+            Integer senderId = userService.lambdaQuery().eq(User::getUsername, username).list().get(0).getId();
+            messages.setReceiverId(receiverId);
+            messages.setSenderId(senderId);
+            messages.setType("私信");
+            if (fromSession != null && toSession != null){
+                messages.setStatus("1");
+            } else {
+                messages.setStatus("0");
+            }
+            messagesService.save(messages);
+
+            // 根据 to用户名来获取 session，再通过session发送消息文本
+            if (toSession != null) {
+                // 服务器端 再把消息组装一下，组装后的消息包含发送人和发送的文本内容
+                // {"from": "zhang", "text": "hello"}
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.set("from", username);  // from 是 zhang
+                jsonObject.set("text", text);  // text 同上面的text
+                this.sendMessage(jsonObject.toString(), toSession);
+                //log.info("发送给用户username={}，消息：{}", toUsername, jsonObject.toString());
+            } else {
+                //log.info("发送失败，未找到用户username={}的session", toUsername);
+            }
         }
+
     }
+
     @OnError
     public void onError(Session session, Throwable error) {
         log.error("发生错误");

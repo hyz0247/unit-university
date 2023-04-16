@@ -105,11 +105,13 @@ public class MessagesController {
 
     /** 私信未读改为已读*/
     @GetMapping("readPrivate")
-    public Result readPrivate(@RequestParam Integer userId){
+    public Result readPrivate(@RequestParam Integer userId,Integer id){
         UpdateWrapper<Messages> wrapper = new UpdateWrapper<>();
         List<Messages> messagesList = messagesService.lambdaQuery()
                 .eq(Messages::getReceiverId,userId)
-                .eq(Messages::getStatus, "0").eq(Messages::getType, "私信").list();
+                .eq(Messages::getSenderId,id)
+                .eq(Messages::getStatus, "0")
+                .eq(Messages::getType, "私信").list();
 
         if (messagesList.size()>0){
             ArrayList<Integer> idList = new ArrayList<>();

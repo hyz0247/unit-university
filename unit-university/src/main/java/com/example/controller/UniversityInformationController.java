@@ -2,10 +2,7 @@ package com.example.controller;
 
 
 import com.example.commmon.Result;
-import com.example.entity.JobType;
-import com.example.entity.Resume;
-import com.example.entity.StudentInformation;
-import com.example.entity.UniversityInformation;
+import com.example.entity.*;
 import com.example.mapper.UniversityInformationMapper;
 import com.example.service.UniversityInformationService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -28,5 +28,15 @@
     <select id="pageList" resultType="com.example.entity.Job">
         select * from job ${ew.customSqlSegment}
     </select>
+    <select id="quarterList" resultType="com.example.entity.QuarterList">
+        SELECT
+            IFNULL(SUM(CASE WHEN MONTH(publish_date) BETWEEN 1 AND 3 THEN 1 ELSE 0 END), 0) AS 'first_quarter',
+            IFNULL(SUM(CASE WHEN MONTH(publish_date) BETWEEN 4 AND 6 THEN 1 ELSE 0 END), 0) AS 'second_quarter',
+            IFNULL(SUM(CASE WHEN MONTH(publish_date) BETWEEN 7 AND 9 THEN 1 ELSE 0 END), 0) AS 'third_quarter',
+            IFNULL(SUM(CASE WHEN MONTH(publish_date) BETWEEN 10 AND 12 THEN 1 ELSE 0 END), 0) AS 'fourth_quarter'
+        FROM
+            job
+            ${ew.customSqlSegment}
+    </select>
 
 </mapper>

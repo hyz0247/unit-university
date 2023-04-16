@@ -11,6 +11,8 @@ import com.example.entity.*;
 import com.example.mapper.AdminInformationMapper;
 import com.example.mapper.JobMapper;
 import com.example.service.*;
+import com.example.vo.BarVO;
+import com.example.vo.PieVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -89,7 +91,7 @@ public class JobController {
             jobQueryWrapper.le(Job::getSalaryMin,salaryMax);
         }
 
-        IPage<Job> result = jobMapper.pageList(page,jobQueryWrapper);
+        IPage<Job> result = jobService.pageList(page,jobQueryWrapper);
         //System.out.println(result.getTotal());
         //System.out.println(result.getRecords());
         for (int i=0;i<result.getRecords().size();i++){
@@ -173,6 +175,36 @@ public class JobController {
         List<Job> list = jobService.lambdaQuery().eq(Job::getTypeId,typeID).orderByDesc(Job::getCollectNumber).last("limit 5").list();
 //        List<Job> list = jobService.lambdaQuery().orderByDesc(Job::getCollectNumber).last("limit 5").list();
         return Result.suc(list);
+    }
+
+    @PostMapping ("/quarterList")
+    public Result quarterList(@RequestBody HashMap hashMap){
+
+        String roleId = (String)hashMap.get("roleId");
+        String companyId = (String)hashMap.get("companyId");
+        String year = (String)hashMap.get("year");
+        String type = (String)hashMap.get("type");
+        String unit = (String)hashMap.get("unit");
+
+        LambdaQueryWrapper<Job> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.apply("YEAR(publish_date) = "+year+"");
+        if (roleId.equals("3")){
+            queryWrapper.eq(Job::getCompanyId,companyId);
+        }
+        if (StringUtils.isNotBlank(type)&& !"null".equals(type)){
+            queryWrapper.eq(Job::getTypeId,type);
+        }
+        if (StringUtils.isNotBlank(unit)&& !"null".equals(unit)){
+            queryWrapper.eq(Job::getCompanyId,unit);
+        }
+
+        BarVO barVO = jobService.quarterList(queryWrapper);
+        List<PieVO> pieVOS = jobService.quarterListPie(queryWrapper);
+        HashMap map = new HashMap<>();
+        map.put("barVO",barVO);
+        map.put("pieVOS",pieVOS);
+
+        return Result.suc(map);
     }
 
 

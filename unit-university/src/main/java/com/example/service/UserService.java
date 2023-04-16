@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.entity.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.example.entity.UserList;
+import com.example.vo.BarVO;
+import com.example.vo.PieVO;
 
 import java.util.List;
 
@@ -25,5 +28,9 @@ public interface UserService extends IService<User> {
     IPage pageUnit(IPage<User> page, Wrapper wrapper);
 
     List<User> listCollege(Integer affiliation);
+
+    BarVO listRoleId();
+
+    List<PieVO> listRoleIdPie();
 
 }
