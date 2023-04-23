@@ -34,6 +34,9 @@ public class JobController {
     private JobMapper jobMapper;
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private JobService jobService;
 
     @Autowired
@@ -62,7 +65,8 @@ public class JobController {
         String unit = (String)hashMap.get("unit");
         String salaryMin = (String)hashMap.get("salaryMin");
         String salaryMax = (String)hashMap.get("salaryMax");
-        Integer size;
+
+        User user = userService.lambdaQuery().eq(User::getId, userId).list().get(0);
 
         IPage<Job> page = new Page<>() ;
         page.setCurrent(param.getPageNum());
@@ -71,6 +75,10 @@ public class JobController {
         LambdaQueryWrapper<Job> jobQueryWrapper = new LambdaQueryWrapper<>();
 
         if(StringUtils.isNotBlank(roleId)&&roleId.equals("3")){
+            if (user.getAffiliation() != null){
+                User user1 = userService.lambdaQuery().eq(User::getId, user.getAffiliation()).list().get(0);
+                jobQueryWrapper.eq(Job::getCompanyId,userId).or().eq(Job::getCompanyId,user1.getId());
+            }else
             jobQueryWrapper.eq(Job::getCompanyId,userId);
         }
         if(StringUtils.isNotBlank(name) && !"null".equals(name)){
@@ -90,6 +98,7 @@ public class JobController {
         }else if(StringUtils.isNotBlank(salaryMax) && !"null".equals(salaryMax)){
             jobQueryWrapper.le(Job::getSalaryMin,salaryMax);
         }
+        jobQueryWrapper.eq(Job::getStatus,"1");
 
         IPage<Job> result = jobService.pageList(page,jobQueryWrapper);
         //System.out.println(result.getTotal());
@@ -207,5 +216,13 @@ public class JobController {
         return Result.suc(map);
     }
 
+    /** 录取一个减少一个*/
+    @GetMapping("/reduce")
+    public Result reduce(@RequestParam Integer jobId){
+        Job job = jobMapper.selectById(jobId);
+        Integer number = job.getNumber() - 1;
+        job.setNumber(number);
+        return jobService.updateById(job)?Result.suc():Result.fail();
+    }
 
 }

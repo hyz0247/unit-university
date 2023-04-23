@@ -9,8 +9,10 @@ import com.example.commmon.QueryPageParam;
 import com.example.commmon.Result;
 import com.example.entity.Application;
 import com.example.entity.ApprovalRecord;
+import com.example.entity.Job;
 import com.example.entity.User;
 import com.example.service.ApprovalRecordService;
+import com.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,6 +35,9 @@ import java.util.HashMap;
 public class ApprovalRecordController {
 
     @Autowired
+    private UserService userService;
+
+    @Autowired
     private ApprovalRecordService approvalRecordService;
 
     /** 注册或添加*/
@@ -50,6 +55,8 @@ public class ApprovalRecordController {
         String roleId = (String)hashMap.get("roleId");
         String userId = (String)hashMap.get("userId");
 
+        User user = userService.lambdaQuery().eq(User::getId, userId).list().get(0);
+
         IPage<ApprovalRecord> page = new Page<>() ;
         page.setCurrent(param.getPageNum());
         page.setSize(param.getPageSize());
@@ -61,6 +68,10 @@ public class ApprovalRecordController {
         if(roleId.equals("1")){
             queryWrapper.apply("application.student_id = '"+userId+"'");
         }else if (roleId.equals("3")){
+            if (user.getAffiliation() != null){
+                User user1 = userService.lambdaQuery().eq(User::getId, user.getAffiliation()).list().get(0);
+                queryWrapper.apply("(approval_record.operator_id ='"+userId+"' or approval_record.operator_id = "+user1.getId()+")");
+            }else
             queryWrapper.apply("approval_record.operator_id ='"+userId+"'");
         }
         if (StringUtils.isNotBlank(name) && !"null".equals(name)){

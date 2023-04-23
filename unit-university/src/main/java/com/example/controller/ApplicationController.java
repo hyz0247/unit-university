@@ -12,6 +12,7 @@ import com.example.entity.Resume;
 import com.example.entity.User;
 import com.example.mapper.ApplicationMapper;
 import com.example.service.ApplicationService;
+import com.example.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -29,6 +30,9 @@ import java.util.List;
 @RestController
 @RequestMapping("/application")
 public class ApplicationController {
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private ApplicationMapper applicationMapper;
@@ -60,7 +64,6 @@ public class ApplicationController {
 
         Application application = applicationMapper.selectById(applicationId);
         application.setStatus(Integer.parseInt(status));
-
         return applicationService.updateById(application)?Result.suc():Result.fail();
     }
 
@@ -73,6 +76,8 @@ public class ApplicationController {
         String roleId = (String)hashMap.get("roleId");
         String userId = (String)hashMap.get("userId");
 
+        User user = userService.lambdaQuery().eq(User::getId, userId).list().get(0);
+
         IPage<Application> page = new Page<>() ;
         page.setCurrent(param.getPageNum());
         page.setSize(param.getPageSize());
@@ -84,6 +89,10 @@ public class ApplicationController {
         if(roleId.equals("1")){
             applicationQueryWrapper.apply("application.student_id = '"+userId+"'");
         }else if (roleId.equals("3")){
+            if (user.getAffiliation() != null){
+                User user1 = userService.lambdaQuery().eq(User::getId, user.getAffiliation()).list().get(0);
+                applicationQueryWrapper.apply("(job.company_id = "+userId+" or job.company_id = "+user1.getId()+")");
+            }else
             applicationQueryWrapper.apply("job.company_id ='"+userId+"'");
         }
         if (StringUtils.isNotBlank(name) && !"null".equals(name)){
